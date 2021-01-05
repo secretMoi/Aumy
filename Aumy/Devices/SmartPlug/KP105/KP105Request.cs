@@ -35,7 +35,7 @@ namespace Aumy.Devices.SmartPlug.KP105
 			return await _kp105.SendAsync(_kp105.Kp105Commands.TurnOff());
 		}
 		
-		public async Task<int> GetPowerStateAsync()
+		public async Task<int> GetPowerSignalAsync()
 		{
 			await GetAllInformationsAsync();
 

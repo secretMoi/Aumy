@@ -95,7 +95,7 @@ namespace Aumy.Controllers
 			{
 				await Connection();
 				
-				dynamic response = await _kp105Request.GetPowerStateAsync();
+				dynamic response = await _kp105Request.GetPowerSignalAsync();
 				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 			}
 			catch (Exception e)
