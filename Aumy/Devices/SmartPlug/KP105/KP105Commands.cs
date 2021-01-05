@@ -44,6 +44,22 @@ namespace Aumy.Devices.SmartPlug.KP105
 				}
 			});
 		}
+
+		public string GetPowerState()
+		{
+			return JsonConvert.SerializeObject(new
+			{
+				system = new
+				{
+					get_sysinfo = new
+					{
+						relay_state = new
+						{
+						}
+					}
+				}
+			});
+		}
 		
 		public string SetAlias(string name)
 		{

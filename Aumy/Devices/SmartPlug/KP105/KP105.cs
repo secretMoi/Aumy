@@ -79,7 +79,7 @@ namespace Aumy.Devices.SmartPlug.KP105
 							)
 						);
 					else
-						throw new Exception($"Aucune réponse reçue de la prise KP105 à {_ipAddress}:{_port}");
+						throw new TimeoutException($"Aucune réponse reçue de la prise KP105 à {_ipAddress}:{_port}");
 				});
 			}
 			catch (Exception e)

@@ -87,5 +87,22 @@ namespace Aumy.Controllers
 				return Problem();
 			}
 		}
+		
+		[HttpGet("GetPowerState")]
+		public async Task<IActionResult> GetPowerState()
+		{
+			try
+			{
+				await Connection();
+				
+				dynamic response = await _kp105.SendAsync(_kp105.Kp105Commands.GetPowerState());
+				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				return Problem();
+			}
+		}
 	}
 }
