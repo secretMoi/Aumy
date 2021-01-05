@@ -10,16 +10,16 @@ namespace Aumy.Controllers
 	[Route("[controller]")]
 	public class KP105Controller : ControllerBase
 	{
-		private KP105 _kp105;
+		private KP105Request _kp105Request;
 
 		public KP105Controller()
 		{
-			_kp105 = new KP105("192.168.1.126");
+			_kp105Request = new KP105Request("192.168.1.126");
 		}
 
 		private async Task Connection()
 		{
-			await _kp105.ConnectAsync();
+			await _kp105Request.ConnectAsync();
 		}
 		
 		[HttpGet]
@@ -44,7 +44,7 @@ namespace Aumy.Controllers
 			{
 				await Connection();
 				
-				dynamic response = await _kp105.SendAsync(_kp105.Kp105Commands.GetAllInformations());
+				dynamic response = await _kp105Request.GetAllInformationsAsync();
 				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 			}
 			catch (Exception e)
@@ -61,7 +61,7 @@ namespace Aumy.Controllers
 			{
 				await Connection();
 				
-				dynamic response = await _kp105.SendAsync(_kp105.Kp105Commands.TurnOn());
+				dynamic response = await _kp105Request.TurnOnAsync();
 				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 			}
 			catch (Exception e)
@@ -78,7 +78,7 @@ namespace Aumy.Controllers
 			{
 				await Connection();
 				
-				dynamic response = await _kp105.SendAsync(_kp105.Kp105Commands.TurnOff());
+				dynamic response = await _kp105Request.TurnOffAsync();
 				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 			}
 			catch (Exception e)
@@ -95,7 +95,7 @@ namespace Aumy.Controllers
 			{
 				await Connection();
 				
-				dynamic response = await _kp105.SendAsync(_kp105.Kp105Commands.GetPowerState());
+				dynamic response = await _kp105Request.GetPowerStateAsync();
 				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 			}
 			catch (Exception e)
