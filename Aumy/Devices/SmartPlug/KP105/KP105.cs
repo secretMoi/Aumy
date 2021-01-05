@@ -15,12 +15,16 @@ namespace Aumy.Devices.SmartPlug.KP105
 		private readonly Socket _socket;
 		private readonly KP105Security _kp105Security;
 
+		public KP105Commands Kp105Commands { get; }
+
 		public KP105(string ip)
 		{
 			_ipAddress = IPAddress.Parse(ip);
 			_ipEndPoint = new IPEndPoint(_ipAddress, _port);
 			_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			
 			_kp105Security = new KP105Security();
+			Kp105Commands = new KP105Commands();
 		}
 
 		public async Task ConnectAsync()
@@ -57,7 +61,7 @@ namespace Aumy.Devices.SmartPlug.KP105
 			}
 		}
 
-		public async Task<dynamic> ReceiveAsync()
+		private async Task<dynamic> ReceiveAsync()
 		{
 			try
 			{
@@ -83,34 +87,6 @@ namespace Aumy.Devices.SmartPlug.KP105
 				Console.WriteLine(e.Message);
 				throw new Exception(e.Message);
 			}
-		}
-		
-		public string TurnOn()
-		{
-			return JsonConvert.SerializeObject(new
-			{
-				system = new
-				{
-					set_relay_state = new
-					{
-						state = 1
-					}
-				}
-			});
-		}
-		
-		public string TurnOff()
-		{
-			return JsonConvert.SerializeObject(new
-			{
-				system = new
-				{
-					set_relay_state = new
-					{
-						state = 0
-					}
-				}
-			});
 		}
 	}
 }

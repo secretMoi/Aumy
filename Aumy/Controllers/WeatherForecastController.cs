@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Aumy.Devices.SmartPlug.KP105;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Aumy.Controllers
 {
@@ -25,21 +26,16 @@ namespace Aumy.Controllers
 		}
 
 		[HttpGet]
-		public async Task Get()
+		public WeatherForecast[] Get()
 		{
-			/*var rng = new Random();
+			var rng = new Random();
 			return Enumerable.Range(1, 5).Select(index => new WeatherForecast
 				{
 					Date = DateTime.Now.AddDays(index),
 					TemperatureC = rng.Next(-20, 55),
 					Summary = Summaries[rng.Next(Summaries.Length)]
 				})
-				.ToArray();*/
-
-			KP105 kp105 = new KP105("192.168.1.126");
-			await kp105.ConnectAsync();
-			//await kp105.SendAsync(kp105.TurnOn());
-			await kp105.SendAsync(kp105.TurnOff());
+				.ToArray();
 		}
 	}
 }
