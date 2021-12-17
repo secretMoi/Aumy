@@ -4,105 +4,104 @@ using Aumy.Devices.SmartPlug.KP105;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace Aumy.Controllers
+namespace Aumy.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class Kp105Controller : ControllerBase
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class KP105Controller : ControllerBase
+	private readonly KP105Request _kp105Request;
+
+	public Kp105Controller()
 	{
-		private KP105Request _kp105Request;
+		_kp105Request = new("192.168.1.126");
+	}
 
-		public KP105Controller()
-		{
-			_kp105Request = new KP105Request("192.168.1.126");
-		}
-
-		private async Task Connection()
-		{
-			await _kp105Request.ConnectAsync();
-		}
+	private async Task Connection()
+	{
+		await _kp105Request.ConnectAsync();
+	}
 		
-		[HttpGet]
-		public async Task<IActionResult> Get()
+	[HttpGet]
+	public async Task<IActionResult> Get()
+	{
+		try
 		{
-			try
-			{
-				await Connection();
-				return Ok();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return NotFound();
-			} 
+			await Connection();
+			return Ok();
 		}
-		
-		[HttpGet("GetAllInformations")]
-		public async Task<IActionResult> GetAllInformations()
+		catch (Exception e)
 		{
-			try
-			{
-				await Connection();
+			Console.WriteLine(e.Message);
+			return NotFound();
+		} 
+	}
+		
+	[HttpGet("GetAllInformations")]
+	public async Task<IActionResult> GetAllInformations()
+	{
+		try
+		{
+			await Connection();
 				
-				dynamic response = await _kp105Request.GetAllInformationsAsync();
-				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return Problem();
-			}
+			var response = await _kp105Request.GetAllInformationsAsync();
+			return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 		}
-		
-		[HttpGet("TurnOn")]
-		public async Task<IActionResult> TurnOn()
+		catch (Exception e)
 		{
-			try
-			{
-				await Connection();
-				
-				dynamic response = await _kp105Request.TurnOnAsync();
-				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return Problem();
-			}
+			Console.WriteLine(e.Message);
+			return Problem();
 		}
+	}
 		
-		[HttpGet("TurnOff")]
-		public async Task<IActionResult> TurnOff()
+	[HttpGet("TurnOn")]
+	public async Task<IActionResult> TurnOn()
+	{
+		try
 		{
-			try
-			{
-				await Connection();
+			await Connection();
 				
-				dynamic response = await _kp105Request.TurnOffAsync();
-				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return Problem();
-			}
+			var response = await _kp105Request.TurnOnAsync();
+			return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
 		}
-		
-		[HttpGet("GetPowerState")]
-		public async Task<IActionResult> GetPowerState()
+		catch (Exception e)
 		{
-			try
-			{
-				await Connection();
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
+		
+	[HttpGet("TurnOff")]
+	public async Task<IActionResult> TurnOff()
+	{
+		try
+		{
+			await Connection();
 				
-				dynamic response = await _kp105Request.GetPowerSignalAsync();
-				return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return Problem();
-			}
+			var response = await _kp105Request.TurnOffAsync();
+			return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
+		
+	[HttpGet("GetPowerState")]
+	public async Task<IActionResult> GetPowerState()
+	{
+		try
+		{
+			await Connection();
+				
+			var response = await _kp105Request.GetPowerSignalAsync();
+			return Ok(JsonConvert.SerializeObject(response, Formatting.Indented));
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
 		}
 	}
 }
