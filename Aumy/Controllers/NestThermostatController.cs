@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Aumy.Devices.NestThermostat;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace Aumy.Controllers;
 
