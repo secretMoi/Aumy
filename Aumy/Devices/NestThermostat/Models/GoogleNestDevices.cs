@@ -2,13 +2,12 @@
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
-namespace Aumy.Devices.NestThermostat;
+namespace Aumy.Devices.NestThermostat.Models;
 
 public class GoogleNestDevices
 {
     public List<Device> Devices { get; set; }
     
-    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
     public class SdmDevicesTraitsInfo
     {
         [JsonPropertyName("customName")]

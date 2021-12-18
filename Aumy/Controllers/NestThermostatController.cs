@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Aumy.Devices.NestThermostat;
+using Aumy.Devices.NestThermostat.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Aumy.Controllers;
 
@@ -10,10 +13,12 @@ namespace Aumy.Controllers;
 public class NestThermostatController : ControllerBase
 {
     private readonly NestThermostat _nestThermostat;
+    private readonly GoogleNestConfiguration _googleNestConfiguration;
 
-    public NestThermostatController()
+    public NestThermostatController(IOptions<GoogleNestConfiguration> options)
     {
-        _nestThermostat = new NestThermostat();
+        _googleNestConfiguration = options.Value;
+        _nestThermostat = new NestThermostat(_googleNestConfiguration);
     }
     
     [HttpGet("GetAllDevices")]
