@@ -1,3 +1,4 @@
+using Aumy.Devices.NestThermostat;
 using Aumy.Devices.NestThermostat.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,6 +22,7 @@ public class Startup
 	public void ConfigureServices(IServiceCollection services)
 	{
 		services.AddOptions<GoogleNestConfiguration>().Bind(Configuration.GetSection("GoogleNestConfiguration"));
+		services.AddSingleton<NestThermostat>();
 		
 		services.AddControllers();
 		services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Aumy", Version = "v1"}); });

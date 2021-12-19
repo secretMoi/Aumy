@@ -15,4 +15,6 @@ public class RefreshToken
 
 	[JsonProperty("token_type")]
 	public string TokenType { get; set; }
+
+	public long Timestamp { get; set; }
 }

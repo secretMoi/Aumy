@@ -12,12 +12,11 @@ namespace Aumy.Controllers;
 public class NestThermostatController : ControllerBase
 {
 	private readonly NestThermostat _nestThermostat;
-	private readonly GoogleNestConfiguration _googleNestConfiguration;
+	//private readonly GoogleNestConfiguration _googleNestConfiguration;
 
-	public NestThermostatController(IOptions<GoogleNestConfiguration> options)
+	public NestThermostatController(NestThermostat nestThermostat)
 	{
-		_googleNestConfiguration = options.Value;
-		_nestThermostat = new NestThermostat(_googleNestConfiguration);
+		_nestThermostat = nestThermostat;
 	}
     
 	[HttpGet("GetAllDevices")]
