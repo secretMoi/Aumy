@@ -53,14 +53,14 @@ public class NestThermostat
 		}
 	}
     
-	public async Task<GoogleNestDevices> GetAllDevicesAsync(bool hasAlreadyTried = false)
+	public async Task<GoogleNestThermostat> GetAllDevicesAsync(bool hasAlreadyTried = false)
 	{
 		await CheckIfTokenIsValidAsync();
 		using var response = await _httpClient.GetAsync(_googleNestConfiguration.Url);
         
 		if (response.IsSuccessStatusCode)
 		{
-			return await response.Content.ReadAsAsync<GoogleNestDevices>();
+			return await response.Content.ReadAsAsync<GoogleNestThermostat>();
 		}
 		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
 		{
@@ -102,10 +102,10 @@ public class NestThermostat
 
 	public async Task SetTemperatureAsync(double temperature)
 	{
-		var temperatureCommand = new SetTemperatureCommand
+		var temperatureCommand = new SetTemperatureThermostatCommand
 		{
 			Command = "sdm.devices.commands.ThermostatTemperatureSetpoint.SetHeat",
-			Parameters = new SetTemperatureCommand.Params
+			Parameters = new SetTemperatureThermostatCommand.Params
 			{
 				HeatCelsius = temperature
 			}
@@ -121,10 +121,10 @@ public class NestThermostat
 			throw new ArgumentException($"Heat mode ({heatMode}) is not valid");
 		}
 		
-		var heatModeCommand = new SetModeCommand
+		var heatModeCommand = new SetModeThermostatCommand
 		{
 			Command = "sdm.devices.commands.ThermostatMode.SetMode",
-			Parameters = new SetModeCommand.Params
+			Parameters = new SetModeThermostatCommand.Params
 			{
 				Mode = heatMode
 			}
@@ -140,10 +140,10 @@ public class NestThermostat
 			throw new ArgumentException($"Eco mode ({ecoMode}) is not valid");
 		}
 		
-		var ecoModeCommand = new SetModeCommand
+		var ecoModeCommand = new SetModeThermostatCommand
 		{
 			Command = "sdm.devices.commands.ThermostatEco.SetMode",
-			Parameters = new SetModeCommand.Params
+			Parameters = new SetModeThermostatCommand.Params
 			{
 				Mode = ecoMode
 			}
@@ -152,19 +152,19 @@ public class NestThermostat
 		await SendCommandAsync(ecoModeCommand);
 	}
 
-	private async Task SendCommandAsync(IGoogleNestCommand googleNestCommand, bool hasAlreadyTried = false)
+	private async Task SendCommandAsync(INestThermostatCommand nestThermostatCommand, bool hasAlreadyTried = false)
 	{
 		await CheckIfTokenIsValidAsync();
 		using var response = await _httpClient.PostAsync(
 			_googleNestConfiguration.Url + $"/{_googleNestConfiguration.DeviceId}:executeCommand",
-			SerializeAsJson(googleNestCommand)
+			SerializeAsJson(nestThermostatCommand)
 		);
         
 		if (response.IsSuccessStatusCode) { return; }
 		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
 		{
 			await RefreshTokenAsync();
-			await SendCommandAsync(googleNestCommand, true);
+			await SendCommandAsync(nestThermostatCommand, true);
 			return;
 		}
 

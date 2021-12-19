@@ -4,33 +4,33 @@ using Newtonsoft.Json;
 
 namespace Aumy.Devices.NestThermostat.Models;
 
-public class GoogleNestDevices
+public class GoogleNestThermostat
 {
     public List<Device> Devices { get; set; }
     
-    public class SdmDevicesTraitsInfo
+    public class Info
     {
         [JsonPropertyName("customName")]
         public string CustomName { get; set; }
     }
     
-    public class SdmDevicesTraitsHumidity
+    public class Humidity
     {
         [JsonPropertyName("ambientHumidityPercent")]
         public int AmbientHumidityPercent { get; set; }
     }
 
-    public class SdmDevicesTraitsConnectivity
+    public class Connectivity
     {
         [JsonPropertyName("status")]
         public string Status { get; set; }
     }
 
-    public class SdmDevicesTraitsFan
+    public class Fan
     {
     }
 
-    public class SdmDevicesTraitsThermostatMode
+    public class ThermostatMode
     {
         [JsonPropertyName("mode")]
         public string Mode { get; set; }
@@ -39,7 +39,7 @@ public class GoogleNestDevices
         public List<string> AvailableModes { get; set; }
     }
 
-    public class SdmDevicesTraitsThermostatEco
+    public class ThermostatEco
     {
         [JsonPropertyName("availableModes")]
         public List<string> AvailableModes { get; set; }
@@ -54,25 +54,25 @@ public class GoogleNestDevices
         public double CoolCelsius { get; set; }
     }
 
-    public class SdmDevicesTraitsThermostatHvac
+    public class ThermostatHvac
     {
         [JsonPropertyName("status")]
         public string Status { get; set; }
     }
 
-    public class SdmDevicesTraitsSettings
+    public class Settings
     {
         [JsonPropertyName("temperatureScale")]
         public string TemperatureScale { get; set; }
     }
 
-    public class SdmDevicesTraitsThermostatTemperatureSetpoint
+    public class ThermostatTemperatureSetpoint
     {
         [JsonPropertyName("heatCelsius")]
         public double HeatCelsius { get; set; }
     }
 
-    public class SdmDevicesTraitsTemperature
+    public class Temperature
     {
         [JsonPropertyName("ambientTemperatureCelsius")]
         public double AmbientTemperatureCelsius { get; set; }
@@ -81,34 +81,34 @@ public class GoogleNestDevices
     public class Traits
     {
         [JsonProperty("sdm.devices.traits.Info")]
-        public SdmDevicesTraitsInfo SdmDevicesTraitsInfo { get; set; }
+        public Info Info { get; set; }
 
         [JsonProperty("sdm.devices.traits.Humidity")]
-        public SdmDevicesTraitsHumidity SdmDevicesTraitsHumidity { get; set; }
+        public Humidity Humidity { get; set; }
 
         [JsonProperty("sdm.devices.traits.Connectivity")]
-        public SdmDevicesTraitsConnectivity SdmDevicesTraitsConnectivity { get; set; }
+        public Connectivity Connectivity { get; set; }
 
         [JsonProperty("sdm.devices.traits.Fan")]
-        public SdmDevicesTraitsFan SdmDevicesTraitsFan { get; set; }
+        public Fan Fan { get; set; }
 
         [JsonProperty("sdm.devices.traits.ThermostatMode")]
-        public SdmDevicesTraitsThermostatMode SdmDevicesTraitsThermostatMode { get; set; }
+        public ThermostatMode ThermostatMode { get; set; }
 
         [JsonProperty("sdm.devices.traits.ThermostatEco")]
-        public SdmDevicesTraitsThermostatEco SdmDevicesTraitsThermostatEco { get; set; }
+        public ThermostatEco ThermostatEco { get; set; }
 
         [JsonProperty("sdm.devices.traits.ThermostatHvac")]
-        public SdmDevicesTraitsThermostatHvac SdmDevicesTraitsThermostatHvac { get; set; }
+        public ThermostatHvac ThermostatHvac { get; set; }
 
         [JsonProperty("sdm.devices.traits.Settings")]
-        public SdmDevicesTraitsSettings SdmDevicesTraitsSettings { get; set; }
+        public Settings Settings { get; set; }
 
         [JsonProperty("sdm.devices.traits.ThermostatTemperatureSetpoint")]
-        public SdmDevicesTraitsThermostatTemperatureSetpoint SdmDevicesTraitsThermostatTemperatureSetpoint { get; set; }
+        public ThermostatTemperatureSetpoint ThermostatTemperatureSetpoint { get; set; }
 
         [JsonProperty("sdm.devices.traits.Temperature")]
-        public SdmDevicesTraitsTemperature SdmDevicesTraitsTemperature { get; set; }
+        public Temperature Temperature { get; set; }
     }
 
     public class ParentRelation

@@ -2,7 +2,7 @@
 
 namespace Aumy.Devices.NestThermostat.Commands;
 
-public class SetModeCommand : IGoogleNestCommand
+public class SetTemperatureThermostatCommand : INestThermostatCommand
 {
 	[JsonProperty("command")]
 	public string Command { get; set; }
@@ -12,7 +12,7 @@ public class SetModeCommand : IGoogleNestCommand
 	
 	public class Params
 	{
-		[JsonProperty("mode")]
-		public string Mode { get; set; }
+		[JsonProperty("heatCelsius")]
+		public double HeatCelsius { get; set; }
 	}
 }
