@@ -30,8 +30,7 @@ public class NestThermostat
 		// set une addresse de base (ex : http://xkcd.com/ , qui permet de manipuler plusieurs liens api de ce site)
 		//_httpClient.BaseAddress = new Uri("http://localhost:5000/api/");
 		_httpClient.DefaultRequestHeaders.Accept.Clear(); // nettoie les headers
-
-		// crée un header qui demande du json
+		
 		_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 	}
 	
@@ -99,7 +98,7 @@ public class NestThermostat
 		);
 	}
 
-	public async Task SetTemperatureAsync(double temperature, bool hasAlreadyTried = false)
+	public async Task SetTemperatureAsync(double temperature)
 	{
 		var temperatureCommand = new SetTemperatureCommand
 		{
@@ -110,27 +109,10 @@ public class NestThermostat
 			}
 		};
 
-		await CheckIfTokenIsValidAsync();
-		using var response = await _httpClient.PostAsync(
-			_googleNestConfiguration.Url + $"/{_googleNestConfiguration.DeviceId}:executeCommand",
-			SerializeAsJson(temperatureCommand)
-		);
-        
-		if (response.IsSuccessStatusCode)
-		{
-			return;
-		}
-		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
-		{
-			await RefreshTokenAsync();
-			await SetTemperatureAsync(temperature, true);
-			return;
-		}
-
-		throw new Exception(response.ReasonPhrase);
+		await SendCommandAsync(temperatureCommand);
 	}
 
-	public async Task SetHeatModeAsync(string heatMode, bool hasAlreadyTried = false)
+	public async Task SetHeatModeAsync(string heatMode)
 	{
 		if (!_heatMode.IsValidHeatModeValue(heatMode))
 		{
@@ -146,20 +128,22 @@ public class NestThermostat
 			}
 		};
 
+		await SendCommandAsync(heatModeCommand);
+	}
+
+	private async Task SendCommandAsync(IGoogleNestCommand googleNestCommand, bool hasAlreadyTried = false)
+	{
 		await CheckIfTokenIsValidAsync();
 		using var response = await _httpClient.PostAsync(
 			_googleNestConfiguration.Url + $"/{_googleNestConfiguration.DeviceId}:executeCommand",
-			SerializeAsJson(heatModeCommand)
+			SerializeAsJson(googleNestCommand)
 		);
         
-		if (response.IsSuccessStatusCode)
-		{
-			return;
-		}
+		if (response.IsSuccessStatusCode) { return; }
 		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
 		{
 			await RefreshTokenAsync();
-			await SetHeatModeAsync(heatMode, true);
+			await SendCommandAsync(googleNestCommand, true);
 			return;
 		}
 
