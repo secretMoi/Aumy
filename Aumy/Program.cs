@@ -13,7 +13,7 @@ namespace Aumy
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-				.ConfigureAppConfiguration((hostingContext, config) =>
+				.ConfigureAppConfiguration((_, config) =>
 				{
 					config.AddJsonFile("secrets.json", false, false);
 				})

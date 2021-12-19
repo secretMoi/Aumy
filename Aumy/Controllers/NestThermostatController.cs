@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Aumy.Devices.NestThermostat;
 using Aumy.Devices.NestThermostat.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Aumy.Controllers;
@@ -12,28 +11,41 @@ namespace Aumy.Controllers;
 [Route("[controller]")]
 public class NestThermostatController : ControllerBase
 {
-    private readonly NestThermostat _nestThermostat;
-    private readonly GoogleNestConfiguration _googleNestConfiguration;
+	private readonly NestThermostat _nestThermostat;
+	private readonly GoogleNestConfiguration _googleNestConfiguration;
 
-    public NestThermostatController(IOptions<GoogleNestConfiguration> options)
-    {
-        _googleNestConfiguration = options.Value;
-        _nestThermostat = new NestThermostat(_googleNestConfiguration);
-    }
+	public NestThermostatController(IOptions<GoogleNestConfiguration> options)
+	{
+		_googleNestConfiguration = options.Value;
+		_nestThermostat = new NestThermostat(_googleNestConfiguration);
+	}
     
-    [HttpGet("GetAllDevices")]
-    public async Task<IActionResult> GetAllDevicesAsync()
-    {
-        try
-        {
-            var devices = await _nestThermostat.GetAllDevicesAsync();
-            
-            return Ok(devices);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            return Problem();
-        }
-    }
+	[HttpGet("GetAllDevices")]
+	public async Task<IActionResult> GetAllDevicesAsync()
+	{
+		try
+		{
+			return Ok(await _nestThermostat.GetAllDevicesAsync());
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
+    
+	[HttpPost("SetTemperature")]
+	public async Task<IActionResult> SetTemperatureAsync([FromBody] double temperature)
+	{
+		try
+		{
+			await _nestThermostat.SetTemperatureAsync(temperature);
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
 }
