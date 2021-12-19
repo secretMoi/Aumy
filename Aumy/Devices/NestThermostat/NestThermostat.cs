@@ -13,12 +13,14 @@ namespace Aumy.Devices.NestThermostat;
 
 public class NestThermostat
 {
+	private readonly HeatMode _heatMode;
 	private readonly HttpClient _httpClient;
 	private readonly GoogleNestConfiguration _googleNestConfiguration;
 	private RefreshToken _refreshToken;
 	
-	public NestThermostat(IOptions<GoogleNestConfiguration> googleNestConfiguration)
+	public NestThermostat(IOptions<GoogleNestConfiguration> googleNestConfiguration, HeatMode heatMode)
 	{
+		_heatMode = heatMode;
 		_refreshToken = new RefreshToken();
 		_googleNestConfiguration = googleNestConfiguration.Value;
         
@@ -121,7 +123,43 @@ public class NestThermostat
 		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
 		{
 			await RefreshTokenAsync();
-			await SetTemperatureAsync(temperature);
+			await SetTemperatureAsync(temperature, true);
+			return;
+		}
+
+		throw new Exception(response.ReasonPhrase);
+	}
+
+	public async Task SetHeatModeAsync(string heatMode, bool hasAlreadyTried = false)
+	{
+		if (!_heatMode.IsValidHeatModeValue(heatMode))
+		{
+			throw new ArgumentException($"HeatMode ({heatMode}) is not valid");
+		}
+		
+		var heatModeCommand = new SetHeatModeCommand
+		{
+			Command = "sdm.devices.commands.ThermostatMode.SetMode",
+			Parameters = new SetHeatModeCommand.Params
+			{
+				Mode = heatMode
+			}
+		};
+
+		await CheckIfTokenIsValidAsync();
+		using var response = await _httpClient.PostAsync(
+			_googleNestConfiguration.Url + $"/{_googleNestConfiguration.DeviceId}:executeCommand",
+			SerializeAsJson(heatModeCommand)
+		);
+        
+		if (response.IsSuccessStatusCode)
+		{
+			return;
+		}
+		if (response.StatusCode == HttpStatusCode.Unauthorized && !hasAlreadyTried)
+		{
+			await RefreshTokenAsync();
+			await SetHeatModeAsync(heatMode, true);
 			return;
 		}
 

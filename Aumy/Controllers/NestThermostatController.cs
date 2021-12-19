@@ -47,4 +47,19 @@ public class NestThermostatController : ControllerBase
 			return Problem();
 		}
 	}
+	
+	[HttpPost("SetHeatMode")]
+	public async Task<IActionResult> SetHeatModeAsync([FromBody] string heatMode)
+	{
+		try
+		{
+			await _nestThermostat.SetHeatModeAsync(heatMode);
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
 }

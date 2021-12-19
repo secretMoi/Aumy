@@ -23,6 +23,7 @@ public class Startup
 	{
 		services.AddOptions<GoogleNestConfiguration>().Bind(Configuration.GetSection("GoogleNestConfiguration"));
 		services.AddSingleton<NestThermostat>();
+		services.AddSingleton<HeatMode>();
 		
 		services.AddControllers();
 		services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Aumy", Version = "v1"}); });
