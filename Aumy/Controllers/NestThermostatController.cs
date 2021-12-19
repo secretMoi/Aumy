@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Aumy.Devices.NestThermostat;
-using Aumy.Devices.NestThermostat.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace Aumy.Controllers;
 
@@ -12,7 +10,6 @@ namespace Aumy.Controllers;
 public class NestThermostatController : ControllerBase
 {
 	private readonly NestThermostat _nestThermostat;
-	//private readonly GoogleNestConfiguration _googleNestConfiguration;
 
 	public NestThermostatController(NestThermostat nestThermostat)
 	{
@@ -54,6 +51,21 @@ public class NestThermostatController : ControllerBase
 		try
 		{
 			await _nestThermostat.SetHeatModeAsync(heatMode);
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return Problem();
+		}
+	}
+	
+	[HttpPost("SetEcoMode")]
+	public async Task<IActionResult> SetEcoModeAsync([FromBody] string ecoMode)
+	{
+		try
+		{
+			await _nestThermostat.SetEcoModeAsync(ecoMode);
 			return Ok();
 		}
 		catch (Exception e)

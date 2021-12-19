@@ -13,6 +13,7 @@ public class HeatMode
 		_existingHeatModes.Add("HEAT");
 		_existingHeatModes.Add("COOL");
 		_existingHeatModes.Add("HEATCOOL");
+		_existingHeatModes.Add("OFF");
 	}
 
 	public bool IsValidHeatModeValue(string heatModeValue)

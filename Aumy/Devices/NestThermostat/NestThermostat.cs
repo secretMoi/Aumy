@@ -14,13 +14,15 @@ namespace Aumy.Devices.NestThermostat;
 public class NestThermostat
 {
 	private readonly HeatMode _heatMode;
+	private readonly EcoMode _ecoMode;
 	private readonly HttpClient _httpClient;
 	private readonly GoogleNestConfiguration _googleNestConfiguration;
 	private RefreshToken _refreshToken;
 	
-	public NestThermostat(IOptions<GoogleNestConfiguration> googleNestConfiguration, HeatMode heatMode)
+	public NestThermostat(IOptions<GoogleNestConfiguration> googleNestConfiguration, HeatMode heatMode, EcoMode ecoMode)
 	{
 		_heatMode = heatMode;
+		_ecoMode = ecoMode;
 		_refreshToken = new RefreshToken();
 		_googleNestConfiguration = googleNestConfiguration.Value;
         
@@ -116,19 +118,38 @@ public class NestThermostat
 	{
 		if (!_heatMode.IsValidHeatModeValue(heatMode))
 		{
-			throw new ArgumentException($"HeatMode ({heatMode}) is not valid");
+			throw new ArgumentException($"Heat mode ({heatMode}) is not valid");
 		}
 		
-		var heatModeCommand = new SetHeatModeCommand
+		var heatModeCommand = new SetModeCommand
 		{
 			Command = "sdm.devices.commands.ThermostatMode.SetMode",
-			Parameters = new SetHeatModeCommand.Params
+			Parameters = new SetModeCommand.Params
 			{
 				Mode = heatMode
 			}
 		};
 
 		await SendCommandAsync(heatModeCommand);
+	}
+	
+	public async Task SetEcoModeAsync(string ecoMode)
+	{
+		if (!_ecoMode.IsValidEcoModeValue(ecoMode))
+		{
+			throw new ArgumentException($"Eco mode ({ecoMode}) is not valid");
+		}
+		
+		var ecoModeCommand = new SetModeCommand
+		{
+			Command = "sdm.devices.commands.ThermostatEco.SetMode",
+			Parameters = new SetModeCommand.Params
+			{
+				Mode = ecoMode
+			}
+		};
+
+		await SendCommandAsync(ecoModeCommand);
 	}
 
 	private async Task SendCommandAsync(IGoogleNestCommand googleNestCommand, bool hasAlreadyTried = false)
