@@ -68,7 +68,8 @@ public class TapoConnection
 
 		var responseJson = await SecurePasstrough(
 			JsonConvert.SerializeObject(loginDeviceRequest),
-			deviceInfo.SessionId);
+			deviceInfo.SessionId
+		);
 
 		var response = JsonConvert.DeserializeObject<LoginDeviceResponseDecrypted>(responseJson);
 
@@ -101,9 +102,9 @@ public class TapoConnection
 		await SendRequest(request, deviceInfo);
 	}
 
-	public async Task SetColor(string hex, DeviceInfo deviceInfo)
+	public async Task SetColor(string red, string green, string blue, DeviceInfo deviceInfo)
 	{
-		var colorRGB = ColorTranslator.FromHtml(hex);
+		var colorRGB = ColorTranslator.FromHtml($"#{red}{green}{blue}");
 
 		var colorHSL = ColorsToHSL.FromRGBToHSL(colorRGB.R, colorRGB.G, colorRGB.B);
 
@@ -168,18 +169,13 @@ public class TapoConnection
 			Method = "handshake",
 			Params = new HandshakeRequestParams
 			{
-				Key = @"-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7TXQ4gygC+9RgtrYdnaIglI5W
-U649kudfB1cof8uRFALCcviOUlZtKY3YgxoL8Ep4B231nrS2uAdGgu3g5uKGvLD9
-KdrIcUqGkchg1taJvSNcgkZnuaXKEAFKYQTz/imKpjSvHQJBViMmusOehuEBuJ2D
-SsNFX0YEurNEZW5MFwIDAQAB
------END PUBLIC KEY-----"
+				Key = _tapoConfiguration.PublicKey
 			},
 			RequestTimeMils = 0
 		};
 
 		var httpContent = new StringContent(JsonConvert.SerializeObject(handshake), Encoding.UTF8, "application/json");
-		Uri uri = new Uri($"http://{_deviceIP}/app");
+		var uri = new Uri($"http://{_deviceIP}/app");
 
 		var response = await _httpClient.PostAsync($"http://{_deviceIP}/app", httpContent);
 
@@ -192,13 +188,12 @@ SsNFX0YEurNEZW5MFwIDAQAB
 
 		var cookieValue = cookies.GetCookies(uri).FirstOrDefault(c => c.Name == "TP_SESSIONID")?.Value;
 
-		var dataResponse = JsonConvert.DeserializeObject<HandshakeResponse>(
-			await response.Content.ReadAsStringAsync());
+		var dataResponse = JsonConvert.DeserializeObject<HandshakeResponse>(await response.Content.ReadAsStringAsync());
 
-		byte[] deviceKeyIvBytes = _keyPair.Decrypt(dataResponse.Result.Key);
+		var deviceKeyIvBytes = _keyPair.Decrypt(dataResponse.Result.Key);
 
-		byte[] KeyArray = new byte[16];
-		byte[] IVArray = new byte[16];
+		var KeyArray = new byte[16];
+		var IVArray = new byte[16];
 
 		Array.Copy(deviceKeyIvBytes, 0, KeyArray, 0, 16);
 		Array.Copy(deviceKeyIvBytes, 16, IVArray, 0, 16);

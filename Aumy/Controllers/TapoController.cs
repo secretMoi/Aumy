@@ -15,6 +15,8 @@ public class TapoController : ControllerBase
 		_tapoConnection = tapoConnection;
 	}
 
+	
+	[HttpGet("login")]
 	public async Task<IActionResult> Login()
 	{
 		await _tapoConnection.LoginWithIP();
@@ -22,7 +24,7 @@ public class TapoController : ControllerBase
 		return Ok();
 	}
 
-	[HttpGet("TurnOff")]
+	[HttpGet("turn-off")]
 	public async Task<IActionResult> TurnOff()
 	{
 		var deviceInfo = await _tapoConnection.LoginWithIP();
@@ -30,7 +32,7 @@ public class TapoController : ControllerBase
 		return Ok();
 	}
 
-	[HttpGet("TurnOn")]
+	[HttpGet("turn-on")]
 	public async Task<IActionResult> TurnOn()
 	{
 		var deviceInfo = await _tapoConnection.LoginWithIP();
@@ -39,12 +41,18 @@ public class TapoController : ControllerBase
 		return Ok();
 	}
 
-	[HttpGet("GetInfo")]
+	[HttpGet("get-info")]
 	public async Task<IActionResult> GetInfo()
 	{
 		var deviceInfo = await _tapoConnection.LoginWithIP();
 		return Ok(await _tapoConnection.GetInfo(deviceInfo));
+	}
 
-		
+	[HttpGet("change-color/{red}/{green}/{blue}")]
+	public async Task<IActionResult> ChangeColor(string red, string green, string blue)
+	{
+		var deviceInfo = await _tapoConnection.LoginWithIP();
+		await _tapoConnection.SetColor(red, green, blue, deviceInfo);
+		return Ok();
 	}
 }
