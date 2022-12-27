@@ -8,18 +8,18 @@ namespace Aumy.Controllers;
 [Route("[controller]")]
 public class TapoController : ControllerBase
 {
-	private readonly TapoConnection _tapoConnection;
+	private readonly TapoService _tapoService;
 
-	public TapoController(TapoConnection tapoConnection)
+	public TapoController(TapoService tapoService)
 	{
-		_tapoConnection = tapoConnection;
+		_tapoService = tapoService;
 	}
 
 	
 	[HttpGet("login")]
 	public async Task<IActionResult> Login()
 	{
-		await _tapoConnection.LoginWithIP();
+		await _tapoService.LoginWithIP();
 
 		return Ok();
 	}
@@ -27,16 +27,16 @@ public class TapoController : ControllerBase
 	[HttpGet("turn-off")]
 	public async Task<IActionResult> TurnOff()
 	{
-		var deviceInfo = await _tapoConnection.LoginWithIP();
-		await _tapoConnection.ChangeState(false, deviceInfo);
+		var deviceInfo = await _tapoService.LoginWithIP();
+		await _tapoService.ChangeState(false, deviceInfo);
 		return Ok();
 	}
 
 	[HttpGet("turn-on")]
 	public async Task<IActionResult> TurnOn()
 	{
-		var deviceInfo = await _tapoConnection.LoginWithIP();
-		await _tapoConnection.ChangeState(true, deviceInfo);
+		var deviceInfo = await _tapoService.LoginWithIP();
+		await _tapoService.ChangeState(true, deviceInfo);
 
 		return Ok();
 	}
@@ -44,15 +44,15 @@ public class TapoController : ControllerBase
 	[HttpGet("get-info")]
 	public async Task<IActionResult> GetInfo()
 	{
-		var deviceInfo = await _tapoConnection.LoginWithIP();
-		return Ok(await _tapoConnection.GetInfo(deviceInfo));
+		var deviceInfo = await _tapoService.LoginWithIP();
+		return Ok(await _tapoService.GetInfo(deviceInfo));
 	}
 
 	[HttpGet("change-color/{red}/{green}/{blue}")]
 	public async Task<IActionResult> ChangeColor(string red, string green, string blue)
 	{
-		var deviceInfo = await _tapoConnection.LoginWithIP();
-		await _tapoConnection.SetColor(red, green, blue, deviceInfo);
+		var deviceInfo = await _tapoService.LoginWithIP();
+		await _tapoService.SetColor(red, green, blue, deviceInfo);
 		return Ok();
 	}
 }

@@ -2,6 +2,7 @@ using Aumy.Devices.NestThermostat;
 using Aumy.Devices.NestThermostat.Models;
 using Aumy.Devices.Tapo;
 using Aumy.Devices.Tapo.Models;
+using Aumy.Devices.Tv;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +29,8 @@ public class Startup
 		services.AddSingleton<NestThermostat>();
 		services.AddSingleton<HeatMode>();
 		services.AddSingleton<EcoMode>();
-		services.AddScoped<TapoConnection>();
+		services.AddScoped<TapoService>();
+		services.AddScoped<TvService>();
 		
 		services.AddControllers();
 		services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Aumy", Version = "v1"}); });

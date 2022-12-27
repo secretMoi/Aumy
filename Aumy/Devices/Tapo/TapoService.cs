@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Aumy.Devices.Tapo;
 
-public class TapoConnection
+public class TapoService
 {
 	private readonly TapoConfiguration _tapoConfiguration;
 	private readonly HttpClient _httpClient = new();
@@ -21,7 +21,7 @@ public class TapoConnection
 	private RequestCipher _requestCipher;
 	private KeyPair _keyPair;
 
-	public TapoConnection(IOptions<TapoConfiguration> tapoConfiguration)
+	public TapoService(IOptions<TapoConfiguration> tapoConfiguration)
 	{
 		_tapoConfiguration = tapoConfiguration.Value;
 		_email = _tapoConfiguration.Email;

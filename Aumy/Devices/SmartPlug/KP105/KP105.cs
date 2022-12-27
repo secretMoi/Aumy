@@ -51,7 +51,6 @@ namespace Aumy.Devices.SmartPlug.KP105
 
 					return await ReceiveAsync();
 				});
-
 			}
 			catch (Exception e)
 			{
