@@ -14,7 +14,7 @@ public class Kp105Controller : ControllerBase
 
 	public Kp105Controller()
 	{
-		_kp105Request = new("192.168.1.126");
+		_kp105Request = new KP105Request("192.168.0.4");
 	}
 
 	private async Task Connection()
