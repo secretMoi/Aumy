@@ -31,7 +31,7 @@ public class TapoService
 
 	private async Task<string> SecurePasstrough(string request, string cookie, string token = "")
 	{
-		object passtroughRequest = new BasicRequest
+		var passtroughRequest = new BasicRequest
 		{
 			Method = "securePassthrough",
 			Params = new BasicRequestParams
@@ -73,7 +73,7 @@ public class TapoService
 
 		var response = JsonConvert.DeserializeObject<LoginDeviceResponseDecrypted>(responseJson);
 
-		deviceInfo.Token = response.Result.Token;
+		deviceInfo.Token = response?.Result.Token;
 
 		return deviceInfo;
 	}

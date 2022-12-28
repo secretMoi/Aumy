@@ -18,280 +18,304 @@ using Newtonsoft.Json.Linq;
 
 namespace Aumy.Tests
 {
+	public class Request
+	{
+		// Packet protocol from https://github.com/codetheweb/tuyapi/wiki/Packet-Structure
+		byte[] prefixBytes = new byte[] { 0x00, 0x00, 0x55, 0xaa };
+		byte[] versionBytes = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+		byte[] commandBytes = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+		byte[] payloadLengthBytes = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+
+		// Payload (data, checksum, suffix).
+		byte[] checksumBytes = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+		byte[] suffixBytes = new byte[] { 0x00, 0x00, 0xaa, 0x55 };
+
+		// Command values from https://github.com/codetheweb/tuyapi/wiki/TUYA-Commands
+		public enum Command
+		{
+			SetStatus = 0x07,
+			GetStatus = 0x0a,
+			GetSSIDList = 0x0b
+		}
 
 
-    public class Request
-    {
+		#region Features
+
+		public async Task<JObject> SendJSONObjectForCommandToDevice(object JSON, Command command, Device device,
+			bool encrypt = false)
+		{
+			return await SendJSONStringForCommandToDevice(JsonConvert.SerializeObject(JSON), command, device, encrypt);
+		}
+
+		public async Task<JObject> SendJSONStringForCommandToDevice(string JSON, Command command, Device device,
+			bool encrypt)
+		{
+			Log.Format("Request.SendJSONStringForCommandToDevice, JSON: `{0}`", JSON);
+
+			// Request.
+			byte[] dataBytes = (encrypt) ? EncryptedBytesFromJSONForDevice(JSON, device) : Encoding.UTF8.GetBytes(JSON);
+			byte[] packetBytes = PacketFromDataForCommand(dataBytes, command);
+
+			// Send.
+			byte[] responsePacketBytes = await SendPacketToDevice(packetBytes, device);
+
+			// Validate.
+			if (IsValidPacket(responsePacketBytes) == false)
+			{
+				return null;
+			}
+
+			// Parse.
+			string responseJSONString = DataStringFromPacket(responsePacketBytes);
+			Log.Format("responseJSONString: `{0}`", responseJSONString);
+
+			// Only if any.
+			if (responseJSONString == string.Empty)
+				return new JObject();
+
+			// Create object.
+			JObject responseJSONObject = JObject.Parse(responseJSONString);
+
+			return responseJSONObject;
+		}
+
+		#endregion
 
 
-        // Packet protocol from https://github.com/codetheweb/tuyapi/wiki/Packet-Structure
-        byte[] prefixBytes = new byte[]{ 0x00, 0x00, 0x55, 0xaa };
-        byte[] versionBytes = new byte[]{ 0x00, 0x00, 0x00, 0x00 };
-        byte[] commandBytes = new byte[]{ 0x00, 0x00, 0x00, 0x00 };
-        byte[] payloadLengthBytes = new byte[]{ 0x00, 0x00, 0x00, 0x00 };
+		#region Communication
 
-        // Payload (data, checksum, suffix).
-        byte[] checksumBytes = new byte[]{ 0x00, 0x00, 0x00, 0x00 };
-        byte[] suffixBytes = new byte[]{ 0x00, 0x00, 0xaa, 0x55 };
+		public async Task<byte[]> SendPacketToDevice(byte[] packetBytes, Device device)
+		{
+			Log.Format("Request.SendDataToDevice(), packetBytes.Length: `{0}`", packetBytes.Length);
 
-        // Command values from https://github.com/codetheweb/tuyapi/wiki/TUYA-Commands
-        public enum Command
-        {
-            SetStatus = 0x07,
-            GetStatus = 0x0a,
-            GetSSIDList = 0x0b
-        }
+			using (TcpClient tcpClient = new TcpClient(device.IP, device.port))
+			using (NetworkStream networkStream = tcpClient.GetStream())
+			using (MemoryStream responseMemoryStream = new MemoryStream())
+			{
+				// Write request.
+				await networkStream.WriteAsync(packetBytes, 0, packetBytes.Length);
 
+				// Read response.
+				byte[] responseBytes = new byte[1024];
+				int numberOfBytesResponded = await networkStream.ReadAsync(responseBytes, 0, responseBytes.Length);
+				responseMemoryStream.Write(responseBytes, 0, numberOfBytesResponded);
 
-    #region Features
+				// Close client.
+				networkStream.Close();
+				tcpClient.Close();
 
-        public async Task<JObject> SendJSONObjectForCommandToDevice(object JSON, Command command, Device device, bool encrypt = false)
-        { return await SendJSONStringForCommandToDevice(JsonConvert.SerializeObject(JSON), command, device, encrypt); }
+				// Return byte array.
+				return responseMemoryStream.ToArray();
+			}
+		}
 
-        public async Task<JObject> SendJSONStringForCommandToDevice(string JSON, Command command, Device device, bool encrypt)
-        {
-            Log.Format("Request.SendJSONStringForCommandToDevice, JSON: `{0}`", JSON);
-
-            // Request.
-            byte[] dataBytes = (encrypt) ? EncryptedBytesFromJSONForDevice(JSON, device) : Encoding.UTF8.GetBytes(JSON);
-            byte[] packetBytes = PacketFromDataForCommand(dataBytes, command);
-
-            // Send.
-            byte[] responsePacketBytes = await SendPacketToDevice(packetBytes, device);
-
-            // Validate.
-            if (IsValidPacket(responsePacketBytes) == false)
-            { return null; }
-
-            // Parse.
-            string responseJSONString = DataStringFromPacket(responsePacketBytes);
-            Log.Format("responseJSONString: `{0}`", responseJSONString);
-
-            // Only if any.
-            if (responseJSONString == string.Empty)
-            return new JObject();
-
-            // Create object.
-            JObject responseJSONObject = JObject.Parse(responseJSONString);
-
-            return responseJSONObject;
-        }
-
-    #endregion
+		#endregion
 
 
-    #region Communication
+		#region Packet assembly
 
-        public async Task<byte[]> SendPacketToDevice(byte[] packetBytes, Device device)
-        {
-            Log.Format("Request.SendDataToDevice(), packetBytes.Length: `{0}`", packetBytes.Length);
+		bool IsValidPacket(byte[] packetBytes)
+		{
+			// Emptyness.
+			if (packetBytes == null)
+			{
+				Log.Format("Empty packet.");
+				return false;
+			}
 
-            using (TcpClient tcpClient = new TcpClient(device.IP, device.port))
-            using (NetworkStream networkStream = tcpClient.GetStream())
-            using (MemoryStream responseMemoryStream = new MemoryStream())
-            {
-                // Write request.
-                await networkStream.WriteAsync(packetBytes, 0, packetBytes.Length);
+			// Lengths.
+			int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length +
+			                   payloadLengthBytes.Length;
+			int minimumPayloadLength = checksumBytes.Length + suffixBytes.Length;
+			int minimumPacketLength = headerLength + minimumPayloadLength;
 
-                // Read response.
-                byte[] responseBytes = new byte[1024];
-                int numberOfBytesResponded = await networkStream.ReadAsync(responseBytes, 0, responseBytes.Length);
-                responseMemoryStream.Write(responseBytes, 0, numberOfBytesResponded);
+			// Length.
+			if (packetBytes.Length < minimumPacketLength)
+			{
+				Log.Format("Invalid packet length.");
+				return false;
+			}
 
-                // Close client.
-                networkStream.Close();
-                tcpClient.Close();                    
+			// Prefix.
+			if (packetBytes.Take(4).SequenceEqual(prefixBytes) == false)
+			{
+				Log.Format("Invalid prefix.");
+				return false;
+			}
 
-                // Return byte array.
-                return responseMemoryStream.ToArray();
-            }
-        }
+			// Suffix.
+			if (packetBytes.Skip(packetBytes.Length - 4).Take(4).SequenceEqual(suffixBytes) == false)
+			{
+				Log.Format("Invalid suffix.");
+				return false;
+			}
 
-    #endregion
+			// Payload.
+			int payloadLength =
+				BitConverter.ToInt32(
+					packetBytes.Skip(prefixBytes.Length + versionBytes.Length + commandBytes.Length)
+						.Take(payloadLengthBytes.Length).Reverse().ToArray(), 0);
+			if (packetBytes.Length < headerLength + payloadLength)
+			{
+				Log.Format("Missing payload.");
+				return false;
+			}
 
+			// Valid.
+			return true;
+		}
 
-    #region Packet assembly
+		protected string DataStringFromPacketWithLogs(byte[] packetBytes)
+		{
+			// Header.
+			byte[] packetPrefixBytes = packetBytes.Take(prefixBytes.Length).ToArray();
+			byte[] packetVersionBytes = packetBytes.Skip(prefixBytes.Length).Take(versionBytes.Length).ToArray();
+			byte[] packetCommandBytes = packetBytes.Skip(prefixBytes.Length + versionBytes.Length)
+				.Take(commandBytes.Length).ToArray();
+			byte[] packetPayloadLengthBytes = packetBytes
+				.Skip(prefixBytes.Length + versionBytes.Length + commandBytes.Length).Take(payloadLengthBytes.Length)
+				.ToArray();
 
-        bool IsValidPacket(byte[] packetBytes)
-        {
-            // Emptyness.
-            if (packetBytes == null)
-            {
-                Log.Format("Empty packet.");
-                return false;
-            }
+			// Lengths.
+			int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length +
+			                   payloadLengthBytes.Length;
+			int suffixLength = checksumBytes.Length + suffixBytes.Length;
 
-            // Lengths.
-            int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length + payloadLengthBytes.Length;
-            int minimumPayloadLength = checksumBytes.Length + suffixBytes.Length;
-            int minimumPacketLength = headerLength + minimumPayloadLength;
+			// Data.
+			byte[] packetPayloadBytes = packetBytes.Skip(headerLength).ToArray();
+			byte[] packetDataBytes = packetPayloadBytes.Take(packetPayloadBytes.Length - suffixLength).ToArray();
 
-            // Length.
-            if (packetBytes.Length < minimumPacketLength)
-            {
-                Log.Format("Invalid packet length.");
-                return false;
-            }
+			// Suffix.
+			byte[] packetChecksumBytes =
+				packetBytes.Skip(packetBytes.Length - suffixLength).Take(checksumBytes.Length).ToArray();
+			byte[] packetSuffixBytes = packetBytes.Skip(packetBytes.Length - suffixBytes.Length).ToArray();
 
-            // Prefix.
-            if (packetBytes.Take(4).SequenceEqual(prefixBytes) == false)
-            {
-                Log.Format("Invalid prefix.");
-                return false;
-            }
+			// To string.
+			byte[] packetDataBytesWithoutLeadingZeroes =
+				packetDataBytes.SkipWhile((eachByte, _) => eachByte == 0x00).ToArray();
+			string packetDataString = Encoding.UTF8.GetString(packetDataBytesWithoutLeadingZeroes);
 
-            // Suffix.
-            if (packetBytes.Skip(packetBytes.Length - 4).Take(4).SequenceEqual(suffixBytes) == false)
-            {
-                Log.Format("Invalid suffix.");
-                return false;
-            }
+			// Log bytes.
+			Log.Format("Request.DataFromPacketWithLogs(), packetPrefixBytes: `{0}`",
+				BitConverter.ToString(packetPrefixBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetVersionBytes: `{0}`",
+				BitConverter.ToString(packetVersionBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetCommandBytes: `{0}`",
+				BitConverter.ToString(packetCommandBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetPayloadLengthBytes: `{0}`",
+				BitConverter.ToString(packetPayloadLengthBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetPayloadBytes: `{0}`",
+				BitConverter.ToString(packetPayloadBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetDataBytes: `{0}`",
+				BitConverter.ToString(packetDataBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetChecksumBytes: `{0}`",
+				BitConverter.ToString(packetChecksumBytes));
+			Log.Format("Request.DataFromPacketWithLogs(), packetSuffixBytes: `{0}`",
+				BitConverter.ToString(packetSuffixBytes));
 
-            // Payload.
-            int payloadLength = BitConverter.ToInt32(packetBytes.Skip(prefixBytes.Length + versionBytes.Length + commandBytes.Length).Take(payloadLengthBytes.Length).Reverse().ToArray(), 0);
-            if (packetBytes.Length < headerLength + payloadLength)
-            {
-                Log.Format("Missing payload.");
-                return false;
-            }
+			// Log lengths.
+			int payloadLength = BitConverter.ToInt32(packetPayloadLengthBytes.Reverse().ToArray(), 0);
+			Log.Format("Device.DataFromPacketWithLogs(), payloadLength: `{0}`", payloadLength);
+			Log.Format("Device.DataFromPacketWithLogs(), packetPayloadBytes.Length: `{0}`", packetPayloadBytes.Length);
+			Log.Format("Device.DataFromPacketWithLogs(), packetDataBytes.Length: `{0}`", packetDataBytes.Length);
 
-            // Valid.
-            return true;
-        }
+			// Log string.
+			Log.Format("Device.DataFromPacketWithLogs(), packetDataString: `{0}`", packetDataString);
 
-        protected string DataStringFromPacketWithLogs(byte[] packetBytes)
-        {
-            // Header.
-            byte[] packetPrefixBytes = packetBytes.Take(prefixBytes.Length).ToArray();
-            byte[] packetVersionBytes = packetBytes.Skip(prefixBytes.Length).Take(versionBytes.Length).ToArray();
-            byte[] packetCommandBytes = packetBytes.Skip(prefixBytes.Length + versionBytes.Length).Take(commandBytes.Length).ToArray();
-            byte[] packetPayloadLengthBytes = packetBytes.Skip(prefixBytes.Length + versionBytes.Length + commandBytes.Length).Take(payloadLengthBytes.Length).ToArray();
+			return packetDataString;
+		}
 
-            // Lengths.
-            int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length + payloadLengthBytes.Length;
-            int suffixLength = checksumBytes.Length + suffixBytes.Length;
+		protected string DataStringFromPacket(byte[] packetBytes)
+		{
+			// Lengths.
+			int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length +
+			                   payloadLengthBytes.Length;
+			int suffixLength = checksumBytes.Length + suffixBytes.Length;
 
-            // Data.
-            byte[] packetPayloadBytes = packetBytes.Skip(headerLength).ToArray();
-            byte[] packetDataBytes = packetPayloadBytes.Take(packetPayloadBytes.Length - suffixLength).ToArray();
+			// Data.
+			byte[] packetPayloadBytes = packetBytes.Skip(headerLength).ToArray(); // Skip header
+			byte[] packetDataBytes =
+				packetPayloadBytes.Take(packetPayloadBytes.Length - suffixLength).ToArray(); // Trim suffix
 
-            // Suffix.
-            byte[] packetChecksumBytes = packetBytes.Skip(packetBytes.Length - suffixLength).Take(checksumBytes.Length).ToArray();
-            byte[] packetSuffixBytes = packetBytes.Skip(packetBytes.Length - suffixBytes.Length).ToArray();
+			// To string.
+			byte[] packetDataBytesWithoutLeadingZeroes =
+				packetDataBytes.SkipWhile((eachByte, _) => eachByte == 0x00).ToArray();
+			string packetDataString = Encoding.UTF8.GetString(packetDataBytesWithoutLeadingZeroes);
 
-            // To string.
-            byte[] packetDataBytesWithoutLeadingZeroes = packetDataBytes.SkipWhile((byte eachByte, int eachIndex) => eachByte == 0x00).ToArray();
-            string packetDataString = Encoding.UTF8.GetString(packetDataBytesWithoutLeadingZeroes);
+			return packetDataString;
+		}
 
-            // Log bytes.
-            Log.Format("Request.DataFromPacketWithLogs(), packetPrefixBytes: `{0}`", BitConverter.ToString(packetPrefixBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetVersionBytes: `{0}`", BitConverter.ToString(packetVersionBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetCommandBytes: `{0}`", BitConverter.ToString(packetCommandBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetPayloadLengthBytes: `{0}`", BitConverter.ToString(packetPayloadLengthBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetPayloadBytes: `{0}`", BitConverter.ToString(packetPayloadBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetDataBytes: `{0}`", BitConverter.ToString(packetDataBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetChecksumBytes: `{0}`", BitConverter.ToString(packetChecksumBytes));
-            Log.Format("Request.DataFromPacketWithLogs(), packetSuffixBytes: `{0}`", BitConverter.ToString(packetSuffixBytes));
+		protected byte[] PacketFromDataForCommand(byte[] dataBytes, Command command)
+		{
+			// Set command.
+			commandBytes[3] = (byte)command;
 
-            // Log lengths.
-            int payloadLength = BitConverter.ToInt32(packetPayloadLengthBytes.Reverse().ToArray(), 0);
-            Log.Format("Device.DataFromPacketWithLogs(), payloadLength: `{0}`", payloadLength);
-            Log.Format("Device.DataFromPacketWithLogs(), packetPayloadBytes.Length: `{0}`", packetPayloadBytes.Length);
-            Log.Format("Device.DataFromPacketWithLogs(), packetDataBytes.Length: `{0}`", packetDataBytes.Length);
+			// Count payload length (data with checksum and suffix).
+			payloadLengthBytes = BitConverter.GetBytes(dataBytes.Length + checksumBytes.Length + suffixBytes.Length);
+			if (BitConverter.IsLittleEndian) Array.Reverse(payloadLengthBytes); // Big endian
 
-            // Log string.
-            Log.Format("Device.DataFromPacketWithLogs(), packetDataString: `{0}`", packetDataString);
+			// Assemble packet.
+			using (MemoryStream memoryStream = new MemoryStream())
+			{
+				// Header (prefix, version, command, payload length).
+				memoryStream.Write(prefixBytes, 0, prefixBytes.Length);
+				memoryStream.Write(versionBytes, 0, versionBytes.Length);
+				memoryStream.Write(commandBytes, 0, commandBytes.Length);
+				memoryStream.Write(payloadLengthBytes, 0, payloadLengthBytes.Length);
 
-            return packetDataString;
-        }
+				// Payload (data, checksum, suffix).
+				memoryStream.Write(dataBytes, 0, dataBytes.Length);
+				memoryStream.Write(checksumBytes, 0, checksumBytes.Length);
+				memoryStream.Write(suffixBytes, 0, suffixBytes.Length);
 
-        protected string DataStringFromPacket(byte[] packetBytes)
-        {
-            // Lengths.
-            int headerLength = prefixBytes.Length + versionBytes.Length + commandBytes.Length + payloadLengthBytes.Length;
-            int suffixLength = checksumBytes.Length + suffixBytes.Length;
+				return memoryStream.ToArray();
+			}
+		}
 
-            // Data.
-            byte[] packetPayloadBytes = packetBytes.Skip(headerLength).ToArray(); // Skip header
-            byte[] packetDataBytes = packetPayloadBytes.Take(packetPayloadBytes.Length - suffixLength).ToArray(); // Trim suffix
-
-            // To string.
-            byte[] packetDataBytesWithoutLeadingZeroes = packetDataBytes.SkipWhile((byte eachByte, int eachIndex) => eachByte == 0x00).ToArray();
-            string packetDataString = Encoding.UTF8.GetString(packetDataBytesWithoutLeadingZeroes);
-
-            return packetDataString;
-        }
-
-        protected byte[] PacketFromDataForCommand(byte[] dataBytes, Command command)
-        {
-            // Set command.
-            commandBytes[3] = (byte)command;
-
-            // Count payload length (data with checksum and suffix).
-            payloadLengthBytes = BitConverter.GetBytes(dataBytes.Length + checksumBytes.Length + suffixBytes.Length);
-            if (BitConverter.IsLittleEndian) Array.Reverse(payloadLengthBytes); // Big endian
-
-            // Assemble packet.
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                // Header (prefix, version, command, payload length).
-                memoryStream.Write(prefixBytes, 0, prefixBytes.Length);
-                memoryStream.Write(versionBytes, 0, versionBytes.Length);
-                memoryStream.Write(commandBytes, 0, commandBytes.Length);
-                memoryStream.Write(payloadLengthBytes, 0, payloadLengthBytes.Length);
-
-                // Payload (data, checksum, suffix).
-                memoryStream.Write(dataBytes, 0, dataBytes.Length);
-                memoryStream.Write(checksumBytes, 0, checksumBytes.Length);
-                memoryStream.Write(suffixBytes, 0, suffixBytes.Length);
-
-                return memoryStream.ToArray();
-            }
-        }
-
-    #endregion
+		#endregion
 
 
-    #region Encryption
+		#region Encryption
 
-        // From https://github.com/codetheweb/tuyapi/blob/master/index.js#L300
-        byte[] EncryptedBytesFromJSONForDevice(string JSON, Device device)
-        {
-            Log.Format("Request.EncryptedBytesFromJSONForDevice()");
+		// From https://github.com/codetheweb/tuyapi/blob/master/index.js#L300
+		byte[] EncryptedBytesFromJSONForDevice(string JSON, Device device)
+		{
+			Log.Format("Request.EncryptedBytesFromJSONForDevice()");
 
-            // Key.
-            byte[] key = Encoding.UTF8.GetBytes(device.localKey);
+			// Key.
+			byte[] key = Encoding.UTF8.GetBytes(device.localKey);
 
-            // Encrypt with key.
-            string encryptedJSONBase64String;
-            using (AesManaged aes = new AesManaged(){ Mode = CipherMode.ECB, Key = key })
-            using (MemoryStream encryptedStream = new MemoryStream())
-            using (CryptoStream cryptoStream = new CryptoStream(encryptedStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-            {
-                byte[] JSONBytes = Encoding.UTF8.GetBytes(JSON);
-                cryptoStream.Write(JSONBytes, 0, JSONBytes.Length);
-                cryptoStream.Close();
-                encryptedJSONBase64String = Convert.ToBase64String(encryptedStream.ToArray());
-            }
+			// Encrypt with key.
+			string encryptedJSONBase64String;
+			using (AesManaged aes = new AesManaged { Mode = CipherMode.ECB, Key = key })
+			using (MemoryStream encryptedStream = new MemoryStream())
+			using (CryptoStream cryptoStream =
+			       new CryptoStream(encryptedStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+			{
+				byte[] JSONBytes = Encoding.UTF8.GetBytes(JSON);
+				cryptoStream.Write(JSONBytes, 0, JSONBytes.Length);
+				cryptoStream.Close();
+				encryptedJSONBase64String = Convert.ToBase64String(encryptedStream.ToArray());
+			}
 
-            // Create hash.
-            string hashString;
-            using (MD5 md5 = MD5.Create())
-            using (MemoryStream hashBaseStream = new MemoryStream())
-            {
-                byte[] encryptedPayload = Encoding.UTF8.GetBytes($"data={encryptedJSONBase64String}||lpv={device.protocolVersion}||");
-                hashBaseStream.Write(encryptedPayload, 0, encryptedPayload.Length);
-                hashBaseStream.Write(key, 0, key.Length);
-                byte[] hashBytes = md5.ComputeHash(hashBaseStream.ToArray());
-                string hash = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
-                hashString = hash.Substring(8, 16);
-            }
+			// Create hash.
+			string hashString;
+			using (MD5 md5 = MD5.Create())
+			using (MemoryStream hashBaseStream = new MemoryStream())
+			{
+				byte[] encryptedPayload =
+					Encoding.UTF8.GetBytes($"data={encryptedJSONBase64String}||lpv={device.protocolVersion}||");
+				hashBaseStream.Write(encryptedPayload, 0, encryptedPayload.Length);
+				hashBaseStream.Write(key, 0, key.Length);
+				byte[] hashBytes = md5.ComputeHash(hashBaseStream.ToArray());
+				string hash = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
+				hashString = hash.Substring(8, 16);
+			}
 
-            // Stitch together.
-            return Encoding.UTF8.GetBytes($"{device.protocolVersion}{hashString}{encryptedJSONBase64String}");
-        }
+			// Stitch together.
+			return Encoding.UTF8.GetBytes($"{device.protocolVersion}{hashString}{encryptedJSONBase64String}");
+		}
 
-    #endregion
-
-    }
+		#endregion
+	}
 }
