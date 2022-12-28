@@ -37,7 +37,7 @@ public class TuyaService
 		return tuyaDeviceApiInfo;
 	}
 	
-	public async Task Scan()
+	public async Task ScanAsync()
 	{
 		var scanner = new TuyaScanner();
 		scanner.OnNewDeviceInfoReceived += Scanner_OnNewDeviceInfoReceived;

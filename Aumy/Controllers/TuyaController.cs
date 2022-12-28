@@ -18,7 +18,7 @@ public class TuyaController : ControllerBase
 	[HttpGet("scan")]
 	public async Task<IActionResult> Scan()
 	{
-		await _tuyaService.Scan();
+		await _tuyaService.ScanAsync();
 
 		return Ok();
 	}

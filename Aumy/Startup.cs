@@ -5,6 +5,7 @@ using Aumy.Devices.Tapo.Models;
 using Aumy.Devices.Tuya;
 using Aumy.Devices.Tuya.Devices;
 using Aumy.Devices.Tv;
+using Aumy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -36,9 +37,11 @@ public class Startup
 		services.AddScoped<TapoService>();
 		services.AddScoped<TvService>();
 
-		services.AddScoped<TuyaService>();
+		services.AddSingleton<TuyaService>();
 
 		services.AddScoped<LivingRoomSwitch>();
+		
+		services.AddHostedService<ScanTuyaDevices>();
 
 		services.AddControllers();
 		services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Aumy", Version = "v1" }); });
