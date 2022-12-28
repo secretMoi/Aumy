@@ -2,7 +2,7 @@
 using Aumy.Devices.Tuya;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Aumy.Controllers;
+namespace Aumy.Controllers.Tuya;
 
 [ApiController]
 [Route("[controller]")]
@@ -40,7 +40,7 @@ public class TuyaController : ControllerBase
 	{
 		return Ok(await _tuyaService.GetDeviceCommandsAsync(deviceId));
 	}
-	
+
 	[HttpGet("communicate/{deviceId}")]
 	public async Task<IActionResult> Communicate(string deviceId)
 	{

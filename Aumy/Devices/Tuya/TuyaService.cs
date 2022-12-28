@@ -43,7 +43,7 @@ public class TuyaService
 		scanner.OnNewDeviceInfoReceived += Scanner_OnNewDeviceInfoReceived;
 		Console.WriteLine("Scanning local network for Tuya devices");
 		scanner.Start();
-		await Task.Delay(5000);
+		await Task.Delay(10000);
 		scanner.Stop();
 	}
 	
@@ -79,7 +79,7 @@ public class TuyaService
 		Console.WriteLine($"Response JSON: {response.JSON}");
 	}
 
-	private async Task<TuyaDevice> GetTuyaDeviceFromIdAsync(string deviceId)
+	public async Task<TuyaDevice> GetTuyaDeviceFromIdAsync(string deviceId)
 	{
 		var tuyaDeviceApiInfo = await GetDeviceInfoAsync(deviceId);
 

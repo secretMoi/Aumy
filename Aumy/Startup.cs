@@ -39,7 +39,8 @@ public class Startup
 
 		services.AddSingleton<TuyaService>();
 
-		services.AddScoped<LivingRoomSwitch>();
+		services.AddScoped<MoesDimmerSwitch>();
+		services.AddScoped<DeviceFactory>();
 		
 		services.AddHostedService<ScanTuyaDevices>();
 

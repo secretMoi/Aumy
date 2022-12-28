@@ -2,6 +2,6 @@
 
 public class LocalTuyaDevice
 {
-	public string LocalUuid { get; set; }
-	public string TuyaProductId { get; set; }
+	public string InternalName { get; set; }
+	public string TuyaDeviceId { get; set; }
 }
