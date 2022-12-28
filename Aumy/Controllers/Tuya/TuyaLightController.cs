@@ -15,6 +15,12 @@ public class TuyaLightController : ControllerBase
 		_deviceFactory = deviceFactory;
 	}
 
+	[HttpGet("{deviceId}/info")]
+	public async Task<IActionResult> GetInformation(string deviceId)
+	{
+		return Ok(await _deviceFactory.GetDimmerSwitch(deviceId).GetInformationAsync(deviceId));
+	}
+
 	[HttpPost("{deviceId}/turn-on")]
 	public async Task<IActionResult> TurnOn(string deviceId)
 	{

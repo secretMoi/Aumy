@@ -9,12 +9,16 @@ namespace Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 public class MoesDimmerSwitch : IDimmerSwitch
 {
 	private readonly TuyaService _tuyaService;
-	private TuyaDeviceApiInfo _tuyaDeviceApiInfo;
-	private TuyaDevice _tuyaDevice;
 
 	public MoesDimmerSwitch(TuyaService tuyaService)
 	{
 		_tuyaService = tuyaService;
+	}
+
+	public async Task<object> GetInformationAsync(string deviceId)
+	{
+		var response = await _tuyaService.GetDeviceCommandsAsync(deviceId);
+		return JsonConvert.DeserializeObject<MoesDimmerSwitchRequest>(response.JSON)?.Dps;
 	}
 
 	public async Task TurnOnAsync(string deviceId)
@@ -63,11 +67,5 @@ public class MoesDimmerSwitch : IDimmerSwitch
 		var response = await tuyaDevice.SendAsync(TuyaCommand.CONTROL, tuyaDevice.FillJson(jsonRequest));
 		
 		Console.WriteLine($"Response JSON: {response.JSON}");
-	}
-
-	private void SetTuyaDevice(TuyaDeviceApiInfo tuyaDeviceApiInfo)
-	{
-		_tuyaDeviceApiInfo ??= tuyaDeviceApiInfo;
-		_tuyaDevice ??= new TuyaDevice(tuyaDeviceApiInfo.Ip, tuyaDeviceApiInfo.LocalKey, tuyaDeviceApiInfo.Id);
 	}
 }
