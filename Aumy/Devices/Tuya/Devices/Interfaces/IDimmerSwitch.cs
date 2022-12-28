@@ -6,5 +6,5 @@ public interface IDimmerSwitch
 {
 	Task TurnOnAsync(string deviceId);
 	Task TurnOffAsync(string deviceId);
-	Task SetBrightnessLevelAsync(string deviceId);
+	Task SetBrightnessLevelAsync(string deviceId, int brightness);
 }

@@ -4,6 +4,7 @@ using Aumy.Devices.Tapo;
 using Aumy.Devices.Tapo.Models;
 using Aumy.Devices.Tuya;
 using Aumy.Devices.Tuya.Devices;
+using Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 using Aumy.Devices.Tv;
 using Aumy.Services;
 using Microsoft.AspNetCore.Builder;

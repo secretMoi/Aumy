@@ -30,4 +30,12 @@ public class TuyaLightController : ControllerBase
 
 		return Ok();
 	}
+
+	[HttpPost("{deviceId}/brightness/{brightness}")]
+	public async Task<IActionResult> TurnOff(string deviceId, int brightness)
+	{
+		await _deviceFactory.GetDimmerSwitch(deviceId).SetBrightnessLevelAsync(deviceId, brightness);
+
+		return Ok();
+	}
 }

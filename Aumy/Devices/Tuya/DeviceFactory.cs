@@ -2,6 +2,7 @@
 using System.Linq;
 using Aumy.Devices.Tuya.Devices;
 using Aumy.Devices.Tuya.Devices.Interfaces;
+using Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 using Microsoft.Extensions.Options;
 
 namespace Aumy.Devices.Tuya;
