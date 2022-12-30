@@ -35,7 +35,7 @@ public class MoesDimmerSwitch : IDimmerSwitch
 
 	public async Task SetBrightnessLevelAsync(string deviceId, int brightness)
 	{
-		var request = GenerateRequest(brightness: brightness);
+		var request = GenerateRequest(brightness: brightness * 10);
 		await SendRequest(deviceId, request);
 	}
 

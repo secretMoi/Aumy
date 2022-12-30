@@ -3,7 +3,6 @@ using Aumy.Devices.NestThermostat.Models;
 using Aumy.Devices.Tapo;
 using Aumy.Devices.Tapo.Models;
 using Aumy.Devices.Tuya;
-using Aumy.Devices.Tuya.Devices;
 using Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 using Aumy.Devices.Tv;
 using Aumy.Services;
@@ -28,6 +27,17 @@ public class Startup
 	// This method gets called by the runtime. Use this method to add services to the container.
 	public void ConfigureServices(IServiceCollection services)
 	{
+
+		services.AddCors(options =>
+		{
+			options.AddPolicy(
+				"CorsPolicy",
+				builder => builder.WithOrigins("http://localhost:4200")
+					.AllowAnyMethod()
+					.AllowAnyHeader()
+					.AllowCredentials());
+		});
+		
 		services.AddOptions<GoogleNestConfiguration>().Bind(Configuration.GetSection("GoogleNestConfiguration"));
 		services.AddOptions<TapoConfiguration>().Bind(Configuration.GetSection("TapoConfiguration"));
 		services.AddOptions<TuyaConfiguration>().Bind(Configuration.GetSection("TuyaConfiguration"));
@@ -59,7 +69,11 @@ public class Startup
 			app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Aumy"));
 		}
 
-		app.UseHttpsRedirection();
+		app.UseCors("CorsPolicy");
+
+		app.UsePreflightRequestHandler();
+
+		// app.UseHttpsRedirection();
 
 		app.UseRouting();
 
