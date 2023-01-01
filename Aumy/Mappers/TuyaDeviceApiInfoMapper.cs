@@ -7,9 +7,10 @@ public static class TuyaDeviceApiInfoMapper
 {
 	public static DeviceDTO ToDeviceDTO(TuyaDeviceApiInfo tuyaDeviceApiInfo)
 	{
+		var deviceType = TuyaCategoryMapper.GetTuyaCategory(tuyaDeviceApiInfo.Category);
 		return new DeviceDTO
 		{
-			DeviceType = TuyaCategoryMapper.GetTuyaCategory(tuyaDeviceApiInfo.Category),
+			DeviceType = deviceType,
 			Name = tuyaDeviceApiInfo.Name,
 			Address = tuyaDeviceApiInfo.Ip,
 			Icon = tuyaDeviceApiInfo.Icon,
@@ -21,4 +22,16 @@ public static class TuyaDeviceApiInfoMapper
 			}
 		};
 	}
+
+	// public static SwitchDTO ToSwitchDTO(TuyaDeviceApiInfo tuyaDeviceApiInfo, DeviceTypeDTO deviceType)
+	// {
+	// 	if (deviceType != DeviceTypeDTO.Switch) return null;
+	// 	
+	// 	
+	//
+	// 	return new SwitchDTO
+	// 	{
+	// 		State = tuyaDeviceApiInfo.
+	// 	};
+	// }
 }

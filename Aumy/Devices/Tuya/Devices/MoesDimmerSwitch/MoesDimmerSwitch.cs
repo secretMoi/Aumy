@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Aumy.Devices.Shared;
 using Aumy.Devices.Tuya.Devices.Interfaces;
 using com.clusterrr.TuyaNet;
 using Newtonsoft.Json;
@@ -23,6 +24,20 @@ public class MoesDimmerSwitch : IDimmerSwitch
 			moesDimmerSwitchRequest.Brightness /= 10;
 
 		return moesDimmerSwitchRequest;
+	}
+
+	public async Task<SwitchDTO> GetSwitchInformationAsync(string deviceId)
+	{
+		var response = await _tuyaService.GetDeviceCommandsAsync(deviceId);
+		var moesDimmerSwitchRequest = JsonConvert.DeserializeObject<MoesDimmerSwitchRequest>(response.JSON)?.Dps;
+		if (moesDimmerSwitchRequest != null)
+			moesDimmerSwitchRequest.Brightness /= 10;
+
+		return new SwitchDTO
+		{
+			State = moesDimmerSwitchRequest?.State,
+			Percentage = moesDimmerSwitchRequest?.Brightness
+		};
 	}
 
 	public async Task TurnOnAsync(string deviceId)
