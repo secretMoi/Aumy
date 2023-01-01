@@ -18,7 +18,11 @@ public class MoesDimmerSwitch : IDimmerSwitch
 	public async Task<object> GetInformationAsync(string deviceId)
 	{
 		var response = await _tuyaService.GetDeviceCommandsAsync(deviceId);
-		return JsonConvert.DeserializeObject<MoesDimmerSwitchRequest>(response.JSON)?.Dps;
+		var moesDimmerSwitchRequest = JsonConvert.DeserializeObject<MoesDimmerSwitchRequest>(response.JSON)?.Dps;
+		if (moesDimmerSwitchRequest != null)
+			moesDimmerSwitchRequest.Brightness /= 10;
+
+		return moesDimmerSwitchRequest;
 	}
 
 	public async Task TurnOnAsync(string deviceId)

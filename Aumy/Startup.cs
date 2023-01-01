@@ -1,3 +1,4 @@
+using Aumy.Devices;
 using Aumy.Devices.NestThermostat;
 using Aumy.Devices.NestThermostat.Models;
 using Aumy.Devices.Tapo;
@@ -47,6 +48,7 @@ public class Startup
 		services.AddSingleton<EcoMode>();
 		services.AddScoped<TapoService>();
 		services.AddScoped<TvService>();
+		services.AddScoped<DeviceService>();
 
 		services.AddSingleton<TuyaService>();
 
