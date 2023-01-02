@@ -20,11 +20,11 @@ public class Dps
 	public int? IncreasePower { get; set; }
 
 	[JsonProperty("18")]
-	public string? Current { get; set; }
+	public float? Current { get; set; }
 
 	[JsonProperty("19")]
-	public string? Power { get; set; }
+	public float? Power { get; set; }
 
 	[JsonProperty("20")]
-	public string? Voltage { get; set; }
+	public float? Voltage { get; set; }
 }

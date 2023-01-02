@@ -15,6 +15,12 @@ public class DeviceController : ControllerBase
 		_deviceService = deviceService;
 	}
 	
+	[HttpGet("{deviceId}")]
+	public async Task<IActionResult> GetById(string deviceId)
+	{
+		return Ok(await _deviceService.GetById(deviceId));
+	}
+	
 	[HttpGet("list")]
 	public async Task<IActionResult> DeviceList()
 	{

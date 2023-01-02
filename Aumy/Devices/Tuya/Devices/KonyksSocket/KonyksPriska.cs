@@ -32,11 +32,14 @@ public class KonyksPriska : ISocket
 	public async Task<SocketDTO> GetSocketAsync(string deviceId)
 	{
 		var response = await _tuyaService.GetDeviceCommandsAsync(deviceId);
-		var moesDimmerSwitchRequest = JsonConvert.DeserializeObject<MoesDimmerSwitchRequest>(response.JSON)?.Dps;
+		var request = JsonConvert.DeserializeObject<KonyksPriskaRequest>(response.JSON)?.Dps;
 
 		return new SocketDTO
 		{
-			State = moesDimmerSwitchRequest?.State
+			State = request?.State,
+			Current = request?.Current,
+			Voltage = request?.Voltage,
+			Power = request?.Power
 		};
 	}
 	
@@ -49,7 +52,6 @@ public class KonyksPriska : ISocket
 
 		if (state.HasValue)
 			request.Dps.State = state.Value;
-
 		return request;
 	}
 
