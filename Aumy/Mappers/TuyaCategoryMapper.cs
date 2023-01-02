@@ -1,4 +1,5 @@
 ﻿using Aumy.Devices.Shared;
+using Aumy.Devices.Shared.DTO;
 
 namespace Aumy.Mappers;
 

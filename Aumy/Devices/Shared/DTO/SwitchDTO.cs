@@ -1,4 +1,4 @@
-﻿namespace Aumy.Devices.Shared;
+﻿namespace Aumy.Devices.Shared.DTO;
 
 public class SwitchDTO
 {

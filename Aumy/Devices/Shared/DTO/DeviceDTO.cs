@@ -1,4 +1,4 @@
-﻿namespace Aumy.Devices.Shared;
+﻿namespace Aumy.Devices.Shared.DTO;
 
 public class DeviceDTO
 {
@@ -13,4 +13,5 @@ public class DeviceDTO
 	
 	
 	public SwitchDTO Switch { get; set; }
+	public SocketDTO Socket { get; set; }
 }

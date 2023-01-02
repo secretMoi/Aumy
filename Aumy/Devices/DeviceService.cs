@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Aumy.Devices.Shared;
+using Aumy.Devices.Shared.DTO;
 using Aumy.Devices.Tuya;
 using Aumy.Mappers;
 
@@ -41,6 +41,12 @@ public class DeviceService
 				var dimmerSwitch = _deviceFactory.GetDimmerSwitch(tuyaDeviceDto.TuyaDevice.DeviceId);
 				if(dimmerSwitch is not null)
 					tuyaDeviceDto.Switch = await dimmerSwitch.GetSwitchInformationAsync(tuyaDeviceDto.TuyaDevice.DeviceId);
+				break;
+			
+			case DeviceTypeDTO.Socket:
+				var socket = _deviceFactory.GetSocket(tuyaDeviceDto.TuyaDevice.DeviceId);
+				if(socket is not null)
+					tuyaDeviceDto.Socket = await socket.GetSocketAsync(tuyaDeviceDto.TuyaDevice.DeviceId);
 				break;
 		}
 	}

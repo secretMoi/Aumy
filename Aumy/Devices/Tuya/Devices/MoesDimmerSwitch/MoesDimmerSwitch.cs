@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Aumy.Devices.Shared;
+using Aumy.Devices.Shared.DTO;
 using Aumy.Devices.Tuya.Devices.Interfaces;
 using com.clusterrr.TuyaNet;
 using Newtonsoft.Json;

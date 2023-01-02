@@ -4,6 +4,7 @@ using Aumy.Devices.NestThermostat.Models;
 using Aumy.Devices.Tapo;
 using Aumy.Devices.Tapo.Models;
 using Aumy.Devices.Tuya;
+using Aumy.Devices.Tuya.Devices.KonyksSocket;
 using Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 using Aumy.Devices.Tv;
 using Aumy.Services;
@@ -53,6 +54,7 @@ public class Startup
 		services.AddSingleton<TuyaService>();
 
 		services.AddScoped<MoesDimmerSwitch>();
+		services.AddScoped<KonyksPriska>();
 		services.AddScoped<DeviceFactory>();
 		
 		services.AddHostedService<ScanTuyaDevices>();

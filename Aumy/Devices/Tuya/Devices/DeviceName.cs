@@ -4,4 +4,5 @@ public static class DeviceName
 {
 	public const string MoesDimmerSwitch = "MoesDimmerSwitch";
 	public const string SwitchOneWay = "SwitchOneWay";
+	public const string KonyksSocket = "KonyksSocket";
 }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Aumy.Devices.Shared;
+using Aumy.Devices.Shared.DTO;
 
 namespace Aumy.Devices.Tuya.Devices.Interfaces;
 
