@@ -37,9 +37,9 @@ public class KonyksPriska : ISocket
 		return new SocketDTO
 		{
 			State = request?.State,
-			Current = request?.Current,
-			Voltage = request?.Voltage,
-			Power = request?.Power
+			Current = request?.Current / 1000,
+			Voltage = request?.Voltage / 10,
+			Power = request?.Power / 10
 		};
 	}
 	
