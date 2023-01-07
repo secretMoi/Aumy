@@ -7,9 +7,11 @@ using Aumy.Devices.Tuya;
 using Aumy.Devices.Tuya.Devices.KonyksSocket;
 using Aumy.Devices.Tuya.Devices.MoesDimmerSwitch;
 using Aumy.Devices.Tv;
+using Aumy.Repositories;
 using Aumy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +32,9 @@ public class Startup
 	public void ConfigureServices(IServiceCollection services)
 	{
 
+		// services.AddDbContext<AumyContext>(opt => opt.UseSqlServer());
+		services.AddDbContext<AumyContext>(options => options.UseSqlServer(Configuration.GetSection("AumyDatabaseConnection").Value));
+		
 		services.AddCors(options =>
 		{
 			options.AddPolicy(
@@ -43,6 +48,7 @@ public class Startup
 		services.AddOptions<GoogleNestConfiguration>().Bind(Configuration.GetSection("GoogleNestConfiguration"));
 		services.AddOptions<TapoConfiguration>().Bind(Configuration.GetSection("TapoConfiguration"));
 		services.AddOptions<TuyaConfiguration>().Bind(Configuration.GetSection("TuyaConfiguration"));
+		services.AddOptions<TuyaConfiguration>().Bind(Configuration.GetSection("AumyDatabaseConnection"));
 
 		services.AddSingleton<NestThermostat>();
 		services.AddSingleton<HeatMode>();
